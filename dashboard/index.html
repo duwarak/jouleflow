@@ -1,73 +1,187 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <title>Dream Travel Agency</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JouleFlow Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1720; --card: #17212b; --line: #26333f; --text: #e6edf3; --muted: #9fb0bf;
+    --accent: #3fb68b; --measured: #2ea043; --estimated: #d29922; --unavailable: #6e7681;
+    --run: #58a6ff; --defer: #2bb0a6; --relocate: #a371f7; --warn-bg: #3a2d12; --warn-br: #d29922;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 24px;
+  }
+  h1 { margin: 0 0 2px; font-size: 26px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin-bottom: 18px; }
+  .banner {
+    background: var(--warn-bg); border: 1px solid var(--warn-br); border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 22px; color: #f3e3c0;
+  }
+  .banner strong { color: #ffd777; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 26px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .kpi .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .kpi .value { font-size: 26px; font-weight: 650; margin-top: 6px; }
+  .kpi .unit { color: var(--muted); font-size: 13px; font-weight: 400; }
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 30px 0 12px; }
+  .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .chart-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 8px; }
+  .chart-card h3 { margin: 0 0 2px; font-size: 15px; }
+  .chart-card .meta { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+  tr:last-child td { border-bottom: none; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+  .b-MEASURED { background: rgba(46,160,67,.16); color: #4ac26b; border: 1px solid rgba(46,160,67,.4); }
+  .b-ESTIMATED { background: rgba(210,153,34,.16); color: #e0af3f; border: 1px solid rgba(210,153,34,.4); }
+  .b-UNAVAILABLE { background: rgba(110,118,129,.16); color: #9aa5b1; border: 1px solid rgba(110,118,129,.4); }
+  .b-RUN_NOW { background: rgba(88,166,255,.15); color: #79b8ff; border: 1px solid rgba(88,166,255,.4); }
+  .b-DEFER { background: rgba(43,176,166,.15); color: #4fd0c5; border: 1px solid rgba(43,176,166,.4); }
+  .b-RELOCATE { background: rgba(163,113,247,.15); color: #b98bff; border: 1px solid rgba(163,113,247,.4); }
+  .error { background: #3a1519; border: 1px solid #f85149; color: #ffb3ab; padding: 16px 18px; border-radius: 10px; }
+  code { background: #0b1016; padding: 2px 6px; border-radius: 5px; color: #d9e2ec; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 28px; }
+</style>
 </head>
+<body>
+  <h1>JouleFlow</h1>
+  <div class="sub">Carbon-aware JVM scheduling &mdash; energy accounting, grid intensity, and scheduling decisions per task run.</div>
 
-<body style="margin:0; font-family: Arial, sans-serif; height: 100vh;"></body>
-  <!-- Background image container -->
-  <div style="
-       position: relative;
-      height: 100vh;
-      background-image: url('C:/Users/jashw/OneDrive/Desktop/college/bg2.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-  ">
+  <div id="banner" class="banner">Loading&hellip;</div>
+  <div id="content" style="display:none">
+    <div class="kpis" id="kpis"></div>
 
-    <!-- Black overlay -->
-    <div style="
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        z-index: 0;
-    "></div>
+    <h2>Regional carbon intensity &mdash; next 24 hours</h2>
+    <div class="charts" id="charts"></div>
 
-    <!-- Your content -->
-    <div style="
-          position: relative;
-          z-index: 1;
-          background-size: cover;
-          background-position: center;
-          margin-top:0%;
-          
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          text-align: center;
-      ">
-      <div style="justify-content: center;margin-top: 5;">
-        <h1 style="color:rgb(255, 255, 255);margin-top:0;">WELCOME TO UNIQUE TRAVEL AGENCY</h1>
-        <p style="font-style: italic;color: rgb(255, 255, 255);font-size: larger;font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">
-          Your journey begins here! Explore amazing destinations with us<br>
-          we've hundreds of destination available go through the places and <br>book and create a once in a lifetime
-          experience
-        </p><br>
-         
-        <h1 style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', seri;font-style: italic;font-size: larger;color:rgb(255, 255, 255)">Explore the beaches in maldives</h1>
-        <h1 style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', seri;font-style: italic;font-size: larger;color:rgb(255, 255, 255)">Get a lifetime experience in dubai</h1>
-        <h1 style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', seri;font-style: italic;font-size: larger;color:rgb(255, 255, 255)">Enjoy the nature inswitzerland</h1>
-        <h1 style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', seri;font-style: italic;font-size: larger;color:rgb(255, 255, 255)">Begin a adventurous ride in ladakh</h1>
-        <h1 style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', seri;font-style: italic;font-size: larger;color:rgb(255, 255, 255)">Climb the mountains in himalayas</h1>
-        <br>
-    
-        <h3 style="color:rgb(255, 255, 255);margin-top:0;">For further details click on the option below</h3>
-
-        <nav>
-          <a href="Destinations.html" style="color:rgb(157, 220, 237);text-decoration:underline;font-size:larger;">Destinations</a><br> 
-          <a href="booking.html" style="color:rgb(157, 220, 237);text-decoration:underline;font-size: larger;">Booking</a><br>
-        </nav>
-      </div>
-    </div>
+    <h2>Run ledger</h2>
+    <div style="overflow-x:auto"><table id="ledger"></table></div>
   </div>
+  <div id="error" style="display:none"></div>
 
+  <footer>
+    Energy figures follow the honesty rule: an estimate is never shown as a measurement. Grid intensities
+    in the sample provider are illustrative and must not be used for compliance reporting.
+  </footer>
+
+<script>
+const REGION_COLORS = {
+  NORDIC: "#4ac26b", CAISO: "#e0af3f", INDIA_S: "#79b8ff", POLAND: "#f85149"
+};
+const fmt = (n, d = 2) => Number(n).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+
+async function load() {
+  let ledger, curves;
+  try {
+    [ledger, curves] = await Promise.all([
+      fetch("ledger_export.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      fetch("region_curves.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    ]);
+  } catch (e) {
+    document.getElementById("banner").style.display = "none";
+    const err = document.getElementById("error");
+    err.style.display = "block";
+    err.className = "error";
+    err.innerHTML = "Could not load the JSON exports (" + e.message + ").<br><br>" +
+      "Browsers block <code>fetch()</code> from <code>file://</code>. Run the demo first " +
+      "(<code>mvn exec:java</code>), then serve this folder:<br><br>" +
+      "<code>cd dashboard &amp;&amp; python3 -m http.server 8000</code><br>" +
+      "and open <code>http://localhost:8000/</code>.";
+    return;
+  }
+  render(ledger, curves);
+}
+
+function render(ledger, curves) {
+  // Honesty banner, driven by the actual data.
+  const sources = [...new Set(ledger.map(r => r.energy_source))];
+  const anyLive = ledger.some(r => r.is_live_grid_data);
+  const energyPhrase = sources.length === 1 && sources[0] === "MEASURED"
+    ? "<strong>MEASURED</strong> from Intel RAPL hardware counters"
+    : "<strong>ESTIMATED</strong> from CPU time (RAPL was unavailable) &mdash; not hardware measurements";
+  const gridPhrase = anyLive
+    ? "a <strong>live</strong> grid feed"
+    : "<strong>illustrative sample data</strong> (" + curves.dataSourceLabel + "), not live measurements";
+  document.getElementById("banner").innerHTML =
+    "Reading this honestly: energy on this page is " + energyPhrase +
+    ", and grid carbon intensity is " + gridPhrase + ".";
+
+  document.getElementById("content").style.display = "block";
+
+  // KPIs
+  const totalEnergy = ledger.reduce((s, r) => s + r.energy_joules, 0);
+  const totalEmit = ledger.reduce((s, r) => s + r.emissions_grams_co2, 0) * 1000;      // mg
+  const totalBase = ledger.reduce((s, r) => s + r.baseline_emissions_grams_co2, 0) * 1000; // mg
+  const avoided = totalBase - totalEmit;
+  const pct = totalBase > 0 ? (avoided / totalBase * 100) : 0;
+  const kpi = (label, value, unit) =>
+    `<div class="kpi"><div class="label">${label}</div><div class="value">${value} <span class="unit">${unit}</span></div></div>`;
+  document.getElementById("kpis").innerHTML =
+    kpi("Task runs", ledger.length, "") +
+    kpi("Total energy", fmt(totalEnergy, 3), "J") +
+    kpi("Emissions", fmt(totalEmit, 4), "mg CO&#8322;") +
+    kpi("Avoided vs run-now", fmt(avoided, 4), "mg CO&#8322;") +
+    kpi("Reduction", fmt(pct, 1), "%");
+
+  // Region charts
+  const charts = document.getElementById("charts");
+  for (const [region, series] of Object.entries(curves.regions)) {
+    const card = document.createElement("div");
+    card.className = "chart-card";
+    const min = Math.min(...series.map(p => p.gramsCO2PerKwh));
+    const max = Math.max(...series.map(p => p.gramsCO2PerKwh));
+    card.innerHTML = `<h3>${region}</h3><div class="meta">${Math.round(min)}&ndash;${Math.round(max)} gCO&#8322;/kWh over 24h</div><canvas></canvas>`;
+    charts.appendChild(card);
+    new Chart(card.querySelector("canvas"), {
+      type: "line",
+      data: {
+        labels: series.map(p => p.hour),
+        datasets: [{
+          data: series.map(p => p.gramsCO2PerKwh),
+          borderColor: REGION_COLORS[region] || "#8b949e",
+          backgroundColor: "transparent", borderWidth: 2, pointRadius: 0, tension: 0.35
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: "hour", color: "#9fb0bf" }, ticks: { color: "#9fb0bf", maxTicksLimit: 8 }, grid: { color: "#26333f" } },
+          y: { ticks: { color: "#9fb0bf" }, grid: { color: "#26333f" } }
+        }
+      }
+    });
+  }
+
+  // Ledger table
+  const cols = ["task_name", "energy_joules", "energy_source", "region",
+    "carbon_intensity_gco2_per_kwh", "decision_action", "emissions_grams_co2", "jfr_event_count"];
+  const heads = ["Task", "Energy (J)", "Source", "Region", "Intensity", "Decision", "Emit (mg)", "JFR events"];
+  let html = "<thead><tr>" + heads.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>";
+  for (const r of ledger) {
+    html += "<tr>" +
+      `<td>${r.task_name}</td>` +
+      `<td class="num">${fmt(r.energy_joules, 3)}</td>` +
+      `<td><span class="badge b-${r.energy_source}">${r.energy_source}</span></td>` +
+      `<td>${r.region}</td>` +
+      `<td class="num">${Math.round(r.carbon_intensity_gco2_per_kwh)}</td>` +
+      `<td><span class="badge b-${r.decision_action}">${r.decision_action}</span></td>` +
+      `<td class="num">${fmt(r.emissions_grams_co2 * 1000, 4)}</td>` +
+      `<td class="num">${r.jfr_event_count.toLocaleString()}</td>` +
+      "</tr>";
+  }
+  html += "</tbody>";
+  document.getElementById("ledger").innerHTML = html;
+}
+
+load();
+</script>
 </body>
 </html>
